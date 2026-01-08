@@ -7,3 +7,5 @@ This project demonstrates the practical application of binary mathematics in sec
 ## Future Enhancements
 - Stronger encryption methods
 - Support for larger image formats
+- extend the encryption type from symmetric to asymmetic with integrity validation via matching hashes.
+  
