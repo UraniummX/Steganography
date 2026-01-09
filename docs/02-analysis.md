@@ -39,4 +39,6 @@ For successful encoding, the following condition must be satisfied:
 32 + 8L ≤ 3WH
 
 If this condition is not met, the image does not have sufficient capacity to store the message and encoding must be rejected.
+In practical it shouldnt be expected to equate to the number of available pixels in the given image thus would be logically correct but pratically unstable.
+
 
