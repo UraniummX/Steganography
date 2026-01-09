@@ -26,3 +26,17 @@ Let b₀, b₁, b₂, ... represent the extracted least significant bits of pixe
 
 ## Termination of Decoding
 During decoding, the first 32 bits are read to determine the value of L. The decoder then reads exactly 8L additional bits to reconstruct the message. Once these bits are processed, decoding terminates. Any remaining pixel data is ignored.
+
+## Capacity Analysis
+Let an image have width W and height H, resulting in W × H pixels. Each pixel consists of three color channels (red, green, and blue). If one least significant bit is used from each color channel, the total embedding capacity of the image is 3WH bits.
+
+The required number of bits to embed a message of length L bytes is given by:
+32 + 8L
+
+where 32 bits are reserved for the message length header and 8L bits represent the message payload.
+
+For successful encoding, the following condition must be satisfied:
+32 + 8L ≤ 3WH
+
+If this condition is not met, the image does not have sufficient capacity to store the message and encoding must be rejected.
+
