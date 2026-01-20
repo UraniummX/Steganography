@@ -52,16 +52,32 @@ class StegoApp(tk.Tk):
         self.sidebar = tk.Frame(
             self.root_container,
             bg=self.sidebar_color,
-            width = 220
+            width = 220,
+            padx=10
         )
+        
+
         self.sidebar.pack(side="left", fill="y")
 
-        # Main (RRight)
+        #Make space between sidebar and main area
+        separator = tk.Frame(
+            self.root_container,
+            width=1,
+            bg="#e5e7eb"
+        )
+        separator.pack(side="left", fill="y")
+
         self.main_area = tk.Frame(
             self.root_container,
             bg=self.bg_color
         )
-        self.main_area.pack(side="right", fill="both", expand=True)
+        self.main_area.pack(side="left", fill="both", expand=True , padx=(20,0))
+
+
+
+
+
+
 
         self.build_sidebar()
         self.build_topbar()
@@ -128,6 +144,7 @@ class StegoApp(tk.Tk):
             relief="flat",
             anchor="w",
             padx=20,
+            pady=10,
             font=("Segoe UI" , 12)
         )
         btn.pack(fill="x" , pady=4)
@@ -281,8 +298,16 @@ class StegoApp(tk.Tk):
     def build_encrypt_page(self):
         page = self.pages["Encrypt"]
         
-        container = tk.Frame(page, bg=self.bg_color)
+        # container = tk.Frame(page, bg=self.bg_color)
+        container = tk.Frame(
+            page,
+            bg="white",
+            bd=0,
+            highlightthickness=1,
+            highlightbackground="#e5e7eb",
+        )
         container.pack(fill="both", expand=True, padx=40, pady=30)
+        container.configure(padx=30, pady=25)
 
         img_frame = tk.Frame(container , bg=self.bg_color)
         img_frame.pack(fill="x" , pady=(0,20))
@@ -310,28 +335,27 @@ class StegoApp(tk.Tk):
             font=("Segoe UI" , 10)
         )
         img_label.pack(side="left", padx=15)
-        msg_label = tk.Label(
-            container,
-            text="Message",
-            bg=self.bg_color,
-            fg=self.text_color,
-            font=("Segoe UI" , 11, "bold")
-            )
-        msg_label.pack(anchor="w")
 
-        #Message text box 
+
+
+        self.section_label(container , "Message")
         self.encrypt_message = tk.Text(
             container,
-            height = 6,
+            height=6,
             font=("Segoe UI" , 11),
-            wrap="word"
+            wrap="word",
+            relief="solid",
+            bd=1
         )
-        self.encrypt_message.pack(fill="x" , pady=(5,25))
+        self.encrypt_message.pack(fill="x" , pady=(0,10))
 
+
+        
+       
         key_label = tk.Label(
             container,
             text="Encryption Key",
-            bg=self.bg_color,
+            bg="white",
             fg=self.text_color,
             font=("Segoe UI" , 11, "bold")
         )
@@ -348,13 +372,13 @@ class StegoApp(tk.Tk):
         channel_label = tk.Label(
             container,
             text="Channel Mode",
-            bg=self.bg_color,
+            bg="white",
             fg=self.text_color,
             font=("Segoe UI", 11, "bold")
         )
         channel_label.pack(anchor="w")
 
-        channel_frame = tk.Frame(container, bg=self.bg_color)
+        channel_frame = tk.Frame(container, bg="white")
         channel_frame.pack(fill="x", pady=(10, 25))
 
         self.encrypt_channel = tk.IntVar(value=3)
@@ -365,6 +389,7 @@ class StegoApp(tk.Tk):
                          fg="white" if mode == 1 else self.text_color)
             btn_3.config(bg=self.accent_color if mode == 3 else "#e5e7eb",
                          fg="white" if mode == 3 else self.text_color)
+            print("Channel selected: ", mode) # Debug print
 
         btn_1 = tk.Button(
             channel_frame,
@@ -374,7 +399,9 @@ class StegoApp(tk.Tk):
             padx=30,
             pady=10,
             relief="flat",
-            command=lambda: select_channel(1)
+            command=lambda: select_channel(1),
+            activebackground=self.accent_color,
+            activeforeground="white"
         )
         btn_1.pack(side="left", padx=10)
 
@@ -387,7 +414,9 @@ class StegoApp(tk.Tk):
             padx=30,
             pady=10,
             relief="flat",
-            command=lambda: select_channel(3)
+            command=lambda: select_channel(3),
+            activebackground=self.accent_color,
+            activeforeground="white"
         )
         btn_3.pack(side="left", padx=10)
 
@@ -463,7 +492,18 @@ class StegoApp(tk.Tk):
         
         except Exception as e:
             messagebox.showerror("Error", str(e))
-
+    def section_label(self , parent , text):
+        lbl = tk.Label(
+            parent,
+            text=text,
+            bg="white",
+            fg=self.text_color,
+            font=("Segoe UI" , 11 , "bold")
+        )
+        lbl.pack(anchor="w" , pady=(15,5))
+        return lbl
+    
+    
 
 
 
@@ -528,7 +568,6 @@ class StegoApp(tk.Tk):
         )
         self.decrypt_key.pack(fill="x" , pady=(5,25))
 
-        #Channel Selection
         channel_label = tk.Label(
             container,
             text="Channel Mode",
@@ -538,33 +577,51 @@ class StegoApp(tk.Tk):
         )
         channel_label.pack(anchor="w")
 
-        channel_frame = tk.Frame(container, bg=self.bg_color)
+        channel_frame = tk.Frame(container, bg="white")
         channel_frame.pack(fill="x", pady=(10, 25))
 
         self.decrypt_channel = tk.IntVar(value=3)
 
+
+        def update_decrypt_channel_buttoms():
+            if self.decrypt_channel.get() == 1:
+                btn_1.config(bg=self.accent_color ,fg="white")
+                btn_3.config(bg="#e5e7eb" , fg=self.text_color)
+            else:
+                btn_3.config(bg=self.accent_color , fg="white")
+                btn_1.config(bg="#e5e7eb" , fg=self.text_color)
         btn_1 = tk.Button(
             channel_frame,
             text="1-Channel",
-            bg="#e5e7eb",
-            padx =30,
+            font=("Segoe UI", 11),
+            padx=30,
             pady=10,
             relief="flat",
-            command=lambda: self.decrypt_channel.set(1)
+            cursor="hand2",
+            command=lambda: (self.decrypt_channel.set(1) , update_decrypt_channel_buttoms()),
         )
         btn_1.pack(side="left", padx=10)
 
         btn_3 = tk.Button(
             channel_frame,
             text="3-Channel",
-            bg=self.accent_color,
-            fg="white",
-            padx =30,
+            font=("Segoe UI", 11),
+            padx=30,
             pady=10,
             relief="flat",
-            command=lambda: self.decrypt_channel.set(3)
+            cursor="hand2",
+            command=lambda: (self.decrypt_channel.set(3) , update_decrypt_channel_buttoms()),
         )
         btn_3.pack(side="left", padx=10)
+
+        update_decrypt_channel_buttoms()
+
+
+
+
+
+
+
 
         #Decrypt button
 
@@ -697,3 +754,4 @@ class StegoApp(tk.Tk):
 if __name__ == "__main__":
     app = StegoApp()
     app.mainloop()
+
