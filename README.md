@@ -77,7 +77,7 @@ No Python installation required.
 
 ## 👤 Author
 
-*Gimhara Kumarapeli*  
+*Gimhana Kumarapeli*  
 GitHub: https://github.com/Uraniumx  
 
 -This project is for educational purposes.
