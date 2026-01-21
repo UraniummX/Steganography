@@ -1,21 +1,20 @@
-from encrypt import build_bitstream , embed_bits
-from decrypt import extract_bits , decode_message
+from encrypt import build_bitstream, embed_bits
+from decrypt import extract_bits, decode_message
 
-import tkinter as tk 
-from tkinter import ttk
-from tkinter import filedialog , messagebox
+import tkinter as tk
+from tkinter import filedialog, messagebox
+
+
 class StegoApp(tk.Tk):
-
     def __init__(self):
         super().__init__()
 
-        #Windows setup
+        # Window
         self.title("Image Steganography Tool")
         self.geometry("1000x650")
         self.minsize(900, 600)
 
-        self.state("normal") #To allow maxmize / ResiZe
-
+        # Colors
         self.bg_color = "#f4f6f8"
         self.sidebar_color = "#1f2933"
         self.accent_color = "#4f46e5"
@@ -23,741 +22,344 @@ class StegoApp(tk.Tk):
 
         self.configure(bg=self.bg_color)
 
-        # sidebar state 
-        self.sidebar_visible = True 
+        self.sidebar_width = 220
+        self.sidebar_visible = True
 
         self.build_layout()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # ================= LAYOUT =================
 
     def build_layout(self):
-        # Root Container 
-        self.root_container = tk.Frame(self , bg=self.bg_color)
+        self.root_container = tk.Frame(self, bg=self.bg_color)
         self.root_container.pack(fill="both", expand=True)
 
-        # Sidebar LEFT
-
+        # Sidebar (DO NOT REMOVE FROM LAYOUT)
         self.sidebar = tk.Frame(
             self.root_container,
             bg=self.sidebar_color,
-            width = 220,
-            padx=10
+            width=self.sidebar_width
         )
-        
-
         self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
 
-        #Make space between sidebar and main area
-        separator = tk.Frame(
-            self.root_container,
-            width=1,
-            bg="#e5e7eb"
-        )
-        separator.pack(side="left", fill="y")
+        # Separator (keep a handle so we can hide/show with sidebar)
+        self.separator = tk.Frame(self.root_container, width=1, bg="#e5e7eb")
+        self.separator.pack(side="left", fill="y")
 
-        self.main_area = tk.Frame(
-            self.root_container,
-            bg=self.bg_color
-        )
-        self.main_area.pack(side="left", fill="both", expand=True , padx=(20,0))
-
-
-
-
-
-
+        # Main area
+        self.main_area = tk.Frame(self.root_container, bg=self.bg_color)
+        self.main_area.pack(side="left", fill="both", expand=True)
 
         self.build_sidebar()
         self.build_topbar()
         self.build_pages()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # ================= SIDEBAR =================
 
     def build_sidebar(self):
-        #App name 
-        title = tk.Label(
+        tk.Label(
             self.sidebar,
             text="StegoTool",
             fg="white",
             bg=self.sidebar_color,
-            font =("Segoe UI" , 16 , "bold")
-        )
-        title.pack(pady = (20 , 30))
+            font=("Segoe UI", 16, "bold")
+        ).pack(pady=(25, 30))
 
-        #Navigation buttons
+        self.add_nav_button("Home", self.show_home)
+        self.add_nav_button("Encrypt", self.show_encrypt)
+        self.add_nav_button("Decrypt", self.show_decrypt)
 
-        self.nav_buttons = {}
-
-        self.add_nav_button("Home" , self.show_home)
-        self.add_nav_button("Encrypt" , self.show_encrypt)
-        self.add_nav_button("Decrypt" , self.show_decrypt)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def add_nav_button(self , text , command):
+    def add_nav_button(self, text, command):
         btn = tk.Button(
             self.sidebar,
             text=text,
             command=command,
             bg=self.sidebar_color,
             fg="white",
-            activebackground="#374151",
-            activeforeground="white",
             relief="flat",
             anchor="w",
             padx=20,
-            pady=10,
-            font=("Segoe UI" , 12)
+            pady=12,
+            font=("Segoe UI", 12),
+            cursor="hand2",
+            activebackground="#374151"
         )
-        btn.pack(fill="x" , pady=4)
-        self.nav_buttons[text] = btn
+        btn.pack(fill="x", pady=6)
 
+        btn.bind("<Enter>", lambda e: btn.config(bg="#334155"))
+        btn.bind("<Leave>", lambda e: btn.config(bg=self.sidebar_color))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # ================= TOP BAR =================
 
     def build_topbar(self):
-        self.top_bar = tk.Frame(self.main_area , bg=self.bg_color , height=50)
-        self.top_bar.pack(fill="x")
+        bar = tk.Frame(self.main_area, bg=self.bg_color, height=50)
+        bar.pack(fill="x")
 
-        toggle_btn = tk.Button(
-            self.top_bar,
-            text = "☰",
-            command=self.toggle_sidebar,
+        tk.Button(
+            bar,
+            text="☰",
             bg=self.bg_color,
             fg=self.text_color,
             relief="flat",
-            font=("Segoe UI" , 16)
+            font=("Segoe UI", 16),
+            command=self.toggle_sidebar
+        ).pack(side="left", padx=10, pady=10)
 
-        )
-        toggle_btn.pack(side="left", padx=10 , pady=10)
-
-
-
-
-
-
-
-
-
-
-
-
+    # 🔥 FIXED TOGGLE (Hide/show without rebuilding or shifting)
     def toggle_sidebar(self):
         if self.sidebar_visible:
+            # Hide sidebar and its separator together
             self.sidebar.pack_forget()
-            self.sidebar_visible = False
+            self.separator.pack_forget()
         else:
-            self.sidebar.pack(side="left" , fill="y")
-            self.sidebar_visible = True
+            # Restore in the correct order on the left
+            self.sidebar.pack(side="left", fill="y", before=self.main_area)
+            self.separator.pack(side="left", fill="y", after=self.sidebar)
 
+        self.sidebar_visible = not self.sidebar_visible
+        self.root_container.update_idletasks()
 
-
-
-
-
-
-
+    # ================= PAGES =================
 
     def build_pages(self):
-        self.pages = {}
+        self.pages = {
+            "Home": tk.Frame(self.main_area, bg=self.bg_color),
+            "Encrypt": tk.Frame(self.main_area, bg=self.bg_color),
+            "Decrypt": tk.Frame(self.main_area, bg=self.bg_color),
+        }
 
-        self.pages["Home"] = tk.Frame(self.main_area , bg=self.bg_color)
-        self.pages["Encrypt"] = tk.Frame(self.main_area , bg=self.bg_color)
-        self.pages["Decrypt"] = tk.Frame(self.main_area , bg=self.bg_color)
+        # Don't pack pages yet; only show the active one to avoid layout glitches
+        for p in self.pages.values():
+            p.pack_forget()
 
-        for page in self.pages.values():
-            page.pack(fill="both" , expand=True)
-        
         self.build_home_page()
         self.build_encrypt_page()
         self.build_decrypt_page()
 
         self.show_home()
 
-
-
-
-
-
-
-
-
+    # ================= HOME =================
 
     def build_home_page(self):
         page = self.pages["Home"]
 
-        title = tk.Label(
+        tk.Label(
             page,
-            text = "Image Steganography Tool",
+            text="Image Steganography Tool",
             bg=self.bg_color,
             fg=self.text_color,
-            font=("Segoe UI" , 26 , "bold")   
-        )
-        title.pack(pady=(120,10))
+            font=("Segoe UI", 26, "bold")
+        ).pack(pady=(120, 10))
 
-        subtitle = tk.Label(
+        tk.Label(
             page,
-            text = "Secure Message hiding using encryption and mathematics",
+            text="Secure message hiding using encryption",
             bg=self.bg_color,
             fg="#6b7280",
-            font=("Segoe UI" , 12 )
-        )
-        subtitle.pack(pady=(0,40))
+            font=("Segoe UI", 12)
+        ).pack(pady=(0, 40))
 
-        btn_frame = tk.Frame(page , bg=self.bg_color)
-        btn_frame.pack()
+        btns = tk.Frame(page, bg=self.bg_color)
+        btns.pack()
 
-        enc_btn = tk.Button(
-            btn_frame,
+        tk.Button(
+            btns,
             text="Encrypt",
-            command=self.show_encrypt,
             bg=self.accent_color,
             fg="white",
-            font=("Segoe UI" , 14 , "bold"),
+            font=("Segoe UI", 14, "bold"),
             padx=40,
             pady=12,
-            relief="flat"
-        )
-        enc_btn.grid(row=0 , column=0 , padx=15)
+            relief="flat",
+            command=self.show_encrypt
+        ).grid(row=0, column=0, padx=15)
 
-        dec_btn = tk.Button(
-            btn_frame,
-            text ="Decrypt",
-            command=self.show_decrypt,
+        tk.Button(
+            btns,
+            text="Decrypt",
             bg="#374151",
             fg="white",
-            font=("Segoe UI" , 14),
+            font=("Segoe UI", 14),
             padx=40,
             pady=12,
-            relief="flat"
-        )
-        dec_btn.grid(row=0 , column=1 , padx=15)
+            relief="flat",
+            command=self.show_decrypt
+        ).grid(row=0, column=1, padx=15)
 
-
-
-
-
-
-
-
-
-
-
-
+    # ================= ENCRYPT =================
 
     def build_encrypt_page(self):
         page = self.pages["Encrypt"]
-        
-        # container = tk.Frame(page, bg=self.bg_color)
-        container = tk.Frame(
-            page,
-            bg="white",
-            bd=0,
-            highlightthickness=1,
-            highlightbackground="#e5e7eb",
-        )
-        container.pack(fill="both", expand=True, padx=40, pady=30)
-        container.configure(padx=30, pady=25)
-
-        img_frame = tk.Frame(container , bg=self.bg_color)
-        img_frame.pack(fill="x" , pady=(0,20))
+        card = self.card(page)
 
         self.encrypt_image_path = tk.StringVar(value="No image selected")
+        self.file_picker(card, self.encrypt_image_path, self.select_encrypt_image)
 
-        select_img_btn = tk.Button(
-            img_frame,
-            text="Select Image",
-            bg=self.accent_color,
-            fg="white",
-            font=("Segoe UI" , 11),
-            padx=20,
-            pady=8,
-            relief="flat",
-            command=self.select_encrypt_image
-        )
-        select_img_btn.pack(side="left")
+        self.section(card, "Message")
+        self.encrypt_message = tk.Text(card, height=6)
+        self.encrypt_message.pack(fill="x")
 
-        img_label = tk.Label(
-            img_frame,
-            textvariable=self.encrypt_image_path,
-            bg=self.bg_color,
-            fg="#374151",
-            font=("Segoe UI" , 10)
-        )
-        img_label.pack(side="left", padx=15)
+        self.section(card, "Encryption Key")
+        self.encrypt_key = tk.Entry(card, show="●")
+        self.encrypt_key.pack(fill="x")
 
-
-
-        self.section_label(container , "Message")
-        self.encrypt_message = tk.Text(
-            container,
-            height=6,
-            font=("Segoe UI" , 11),
-            wrap="word",
-            relief="solid",
-            bd=1
-        )
-        self.encrypt_message.pack(fill="x" , pady=(0,10))
-
-
-        
-       
-        key_label = tk.Label(
-            container,
-            text="Encryption Key",
-            bg="white",
-            fg=self.text_color,
-            font=("Segoe UI" , 11, "bold")
-        )
-        key_label.pack(anchor="w")
-
-        self.encrypt_key = tk.Entry(
-            container,
-            show="●",
-            font=("Segoe UI" , 11)
-        )
-        self.encrypt_key.pack(fill="x" , pady=(5,25))
-
-        
-        channel_label = tk.Label(
-            container,
-            text="Channel Mode",
-            bg="white",
-            fg=self.text_color,
-            font=("Segoe UI", 11, "bold")
-        )
-        channel_label.pack(anchor="w")
-
-        channel_frame = tk.Frame(container, bg="white")
-        channel_frame.pack(fill="x", pady=(10, 25))
-
+        self.section(card, "Channel Mode")
         self.encrypt_channel = tk.IntVar(value=3)
+        self.channel_buttons(card, self.encrypt_channel)
 
-        def select_channel(mode):
-            self.encrypt_channel.set(mode)
-            btn_1.config(bg=self.accent_color if mode == 1 else "#e5e7eb",
-                         fg="white" if mode == 1 else self.text_color)
-            btn_3.config(bg=self.accent_color if mode == 3 else "#e5e7eb",
-                         fg="white" if mode == 3 else self.text_color)
-            print("Channel selected: ", mode) # Debug print
-
-        btn_1 = tk.Button(
-            channel_frame,
-            text="1-Channel",
-            bg="#e5e7eb",
-            font=("Segoe UI", 11),
-            padx=30,
-            pady=10,
-            relief="flat",
-            command=lambda: select_channel(1),
-            activebackground=self.accent_color,
-            activeforeground="white"
-        )
-        btn_1.pack(side="left", padx=10)
-
-        btn_3 = tk.Button(
-            channel_frame,
-            text="3-Channel",
-            bg=self.accent_color,
-            fg="white",
-            font=("Segoe UI", 11),
-            padx=30,
-            pady=10,
-            relief="flat",
-            command=lambda: select_channel(3),
-            activebackground=self.accent_color,
-            activeforeground="white"
-        )
-        btn_3.pack(side="left", padx=10)
-
-        encrypt_btn = tk.Button(
-            container,
+        tk.Button(
+            card,
             text="Encrypt",
             bg=self.accent_color,
             fg="white",
-            font=("Segoe UI" , 13 , "bold"),
+            font=("Segoe UI", 13, "bold"),
             padx=40,
             pady=12,
             relief="flat",
             command=self.run_encrypt
-        )
-        encrypt_btn.pack(pady=20)
+        ).pack(pady=25)
 
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def select_encrypt_image(self):
-        from tkinter import filedialog
-
-        file_path = filedialog.askopenfilename(
-            title="Select Image",
-            filetypes = [("image files" , "*.png;*.jpg;*.jpeg;*.bmp"), ("All files" , "*.*")]
-        )
-        if file_path:
-            self.encrypt_image_path.set(file_path)
-
-
-
-
-
-    def run_encrypt(self):
-        try:
-            image_path = self.encrypt_image_path.get()
-            message = self.encrypt_message.get("1.0" , "end").strip()
-            key = self.encrypt_key.get()
-            mode = self.encrypt_channel.get()
-
-            if not image_path or image_path == "No image selected":
-                messagebox.showerror("Error" , "Please select an image.")
-                return
-            if not message:
-                messagebox.showerror("Error" , "Please enter a message to hide.")
-                return
-            if not key:
-                messagebox.showerror("Error" , "Please enter an encryption key.")
-                return
-            output_path = filedialog.asksaveasfilename(
-                title="Save Encrypted Image",
-                defaultextension=".png",
-                filetypes=[("PNG files", "*.png")]
-            )
-
-            if not output_path:
-                return 
-            bitstream = build_bitstream(message , key , mode)
-            embed_bits(image_path , bitstream , mode , output_path)
-
-            messagebox.showinfo("Success" , f"Message encrypted successfully")
-        
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-    def section_label(self , parent , text):
-        lbl = tk.Label(
-            parent,
-            text=text,
-            bg="white",
-            fg=self.text_color,
-            font=("Segoe UI" , 11 , "bold")
-        )
-        lbl.pack(anchor="w" , pady=(15,5))
-        return lbl
-    
-    
-
-
-
-
-
-
-
-
-
-
-
+    # ================= DECRYPT =================
 
     def build_decrypt_page(self):
         page = self.pages["Decrypt"]
-
-        container = tk.Frame(
-            page,
-            bg="white",
-            bd=0,
-            highlightthickness=1,
-            highlightbackground="#e5e7eb",
-        )
-        container.pack(fill="both" , expand=True , padx=40 , pady = 30)
-        container.configure(padx=30, pady=25)
-
-        #image selection 
-        img_frame = tk.Frame(container , bg="white")
-        img_frame.pack(fill="x" , pady=(0,20))
+        card = self.card(page)
 
         self.decrypt_image_path = tk.StringVar(value="No image selected")
+        self.file_picker(card, self.decrypt_image_path, self.select_decrypt_image)
 
-        select_img_btn = tk.Button(
-            img_frame,
-            text="Select Image",
-            bg=self.accent_color,
-            fg="white",
-            font=("Segoe UI" , 11),
-            padx=20,
-            pady=8,
-            relief="flat",
-            command=self.select_decrypt_image
-        )
-        select_img_btn.pack(side="left")
+        self.section(card, "Decryption Key")
+        self.decrypt_key = tk.Entry(card, show="●")
+        self.decrypt_key.pack(fill="x")
 
-        img_label = tk.Label(
-            img_frame,
-            textvariable=self.decrypt_image_path,
-            bg="white",
-            fg="#374151",
-            font=("Segoe UI" , 10)
-        )
-        img_label.pack(side="left", padx=15)
-
-        #Decryption key
-
-        key_label = tk.Label(
-            container,
-            text="Decryption Key",
-            bg="white",
-            fg=self.text_color,
-            font=("Segoe UI" , 11, "bold")
-        )
-        key_label.pack(anchor="w")
-
-        self.decrypt_key = tk.Entry(
-            container,
-            show="●",
-            font=("Segoe UI" , 11)
-        )
-        self.decrypt_key.pack(fill="x" , pady=(5,25))
-
-        channel_label = tk.Label(
-            container,
-            text="Channel Mode",
-            bg="white",
-            fg=self.text_color,
-            font=("Segoe UI", 11, "bold")
-        )
-        channel_label.pack(anchor="w")
-
-        channel_frame = tk.Frame(container, bg="white")
-        channel_frame.pack(fill="x", pady=(10, 25))
-
+        self.section(card, "Channel Mode")
         self.decrypt_channel = tk.IntVar(value=3)
+        self.channel_buttons(card, self.decrypt_channel)
 
-
-        def update_decrypt_channel_buttoms():
-            if self.decrypt_channel.get() == 1:
-                btn_1.config(bg=self.accent_color ,fg="white")
-                btn_3.config(bg="#e5e7eb" , fg=self.text_color)
-            else:
-                btn_3.config(bg=self.accent_color , fg="white")
-                btn_1.config(bg="#e5e7eb" , fg=self.text_color)
-        btn_1 = tk.Button(
-            channel_frame,
-            text="1-Channel",
-            font=("Segoe UI", 11),
-            padx=30,
-            pady=10,
-            relief="flat",
-            cursor="hand2",
-            command=lambda: (self.decrypt_channel.set(1) , update_decrypt_channel_buttoms()),
-        )
-        btn_1.pack(side="left", padx=10)
-
-        btn_3 = tk.Button(
-            channel_frame,
-            text="3-Channel",
-            font=("Segoe UI", 11),
-            padx=30,
-            pady=10,
-            relief="flat",
-            cursor="hand2",
-            command=lambda: (self.decrypt_channel.set(3) , update_decrypt_channel_buttoms()),
-        )
-        btn_3.pack(side="left", padx=10)
-
-        update_decrypt_channel_buttoms()
-
-
-
-
-
-
-
-
-        #Decrypt button
-
-        decrypt_btn = tk.Button(
-            container,
+        tk.Button(
+            card,
             text="Decrypt",
             bg=self.accent_color,
             fg="white",
-            font=("Segoe UI" , 13 , "bold"),
+            font=("Segoe UI", 13, "bold"),
             padx=40,
             pady=12,
             relief="flat",
             command=self.run_decrypt
-        )
-        decrypt_btn.pack(pady=20)
+        ).pack(pady=25)
+
+    # ================= HELPERS =================
+
+    def card(self, parent):
+        c = tk.Frame(parent, bg="white", highlightthickness=1, highlightbackground="#e5e7eb")
+        c.pack(fill="both", expand=True, padx=40, pady=30)
+        c.configure(padx=30, pady=25)
+        return c
+
+    def section(self, parent, text):
+        tk.Label(parent, text=text, bg="white", fg=self.text_color,
+                 font=("Segoe UI", 11, "bold")).pack(anchor="w", pady=(15, 5))
+
+    def file_picker(self, parent, var, command):
+        row = tk.Frame(parent, bg="white")
+        row.pack(fill="x", pady=(0, 20))
+
+        tk.Button(row, text="Select Image", bg=self.accent_color, fg="white",
+                  padx=20, pady=8, relief="flat", command=command).pack(side="left")
+
+        tk.Label(row, textvariable=var, bg="white", fg="#374151").pack(side="left", padx=15)
+
+    def channel_buttons(self, parent, var):
+        row = tk.Frame(parent, bg="white")
+        row.pack(fill="x", pady=10)
+
+        def set_mode(m):
+            var.set(m)
+            b1.config(bg=self.accent_color if m == 1 else "#e5e7eb",
+                      fg="white" if m == 1 else self.text_color)
+            b3.config(bg=self.accent_color if m == 3 else "#e5e7eb",
+                      fg="white" if m == 3 else self.text_color)
+
+        b1 = tk.Button(row, text="1-Channel", padx=30, pady=10,
+                       relief="flat", command=lambda: set_mode(1))
+        b1.pack(side="left", padx=10)
+
+        b3 = tk.Button(row, text="3-Channel", padx=30, pady=10,
+                       relief="flat", bg=self.accent_color, fg="white",
+                       command=lambda: set_mode(3))
+        b3.pack(side="left", padx=10)
+
+    # ================= LOGIC =================
+
+    def select_encrypt_image(self):
+        p = filedialog.askopenfilename(filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp")])
+        if p:
+            self.encrypt_image_path.set(p)
 
     def select_decrypt_image(self):
-        file_path = filedialog.askopenfilename(
-            title="Select Image",
-            filetypes = [("image files" , "*.png;*.jpg;*.jpeg;*.bmp"), ("All files" , "*.*")]
-        )
-        if file_path:
-            self.decrypt_image_path.set(file_path)
-    def run_decrypt(self):
+        p = filedialog.askopenfilename(filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp")])
+        if p:
+            self.decrypt_image_path.set(p)
+
+    def run_encrypt(self):
         try:
-            image_path = self.decrypt_image_path.get()
-            key = self.decrypt_key.get()
-            mode = self.decrypt_channel.get()
+            img = self.encrypt_image_path.get()
+            msg = self.encrypt_message.get("1.0", "end").strip()
+            key = self.encrypt_key.get()
+            mode = self.encrypt_channel.get()
 
-            if not image_path or image_path == "No image selected":
-                messagebox.showerror("Error" , "Please select an image.")
-                return
-            if not key:
-                messagebox.showerror("Error" , "Please enter a decryption key.")
-                return  
-            
-            bits = extract_bits(image_path , 3) # mode replaced with 3
-            message , actual_mode = decode_message(bits , key) # Decode message and get actual mode
+            if "No image" in img or not msg or not key:
+                raise ValueError("All fields are required")
 
-            if mode != actual_mode:
-                messagebox.showerror(
-                    "Error" ,
-                    f"Wrong Channel Select. \n This image was encoded in mode {actual_mode} - Channel."
-                )
+            out = filedialog.asksaveasfilename(defaultextension=".png")
+            if not out:
                 return
-            messagebox.showinfo("Decrypted Message" , message)
+
+            embed_bits(img, build_bitstream(msg, key, mode), mode, out)
+            messagebox.showinfo("Success", "Message encrypted successfully")
+
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
+    def run_decrypt(self):
+        try:
+            img = self.decrypt_image_path.get()
+            key = self.decrypt_key.get()
 
+            # Always extract with 3-channel; header encodes actual mode
+            bits = extract_bits(img, 3)
+            msg, actual_mode = decode_message(bits, key)
 
+            sel_mode = self.decrypt_channel.get()
+            if sel_mode != actual_mode:
+                messagebox.showwarning(
+                    "Mode Mismatch",
+                    f"Selected mode {sel_mode} differs from encoded mode {actual_mode}. Proceeding with decoded message."
+                )
 
+            messagebox.showinfo("Decrypted Message", msg)
 
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
-
+    # ================= NAV =================
 
     def show_home(self):
         self.show_page("Home")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def show_encrypt(self):
         self.show_page("Encrypt")
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def show_decrypt(self):
         self.show_page("Decrypt")
 
+    def show_page(self, name):
+        for p in self.pages.values():
+            p.pack_forget()
+        self.pages[name].pack(fill="both", expand=True)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def show_page(self , page_name):
-        for page in self.pages.values():
-            page.pack_forget()
-        self.pages[page_name].pack(fill="both",expand=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    StegoApp().mainloop()
 
     
-if __name__ == "__main__":
-    app = StegoApp()
-    app.mainloop()
