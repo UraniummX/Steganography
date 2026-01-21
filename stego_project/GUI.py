@@ -519,11 +519,18 @@ class StegoApp(tk.Tk):
     def build_decrypt_page(self):
         page = self.pages["Decrypt"]
 
-        container = tk.Frame(page , bg=self.bg_color)
+        container = tk.Frame(
+            page,
+            bg="white",
+            bd=0,
+            highlightthickness=1,
+            highlightbackground="#e5e7eb",
+        )
         container.pack(fill="both" , expand=True , padx=40 , pady = 30)
+        container.configure(padx=30, pady=25)
 
         #image selection 
-        img_frame = tk.Frame(container , bg=self.bg_color)
+        img_frame = tk.Frame(container , bg="white")
         img_frame.pack(fill="x" , pady=(0,20))
 
         self.decrypt_image_path = tk.StringVar(value="No image selected")
@@ -544,7 +551,7 @@ class StegoApp(tk.Tk):
         img_label = tk.Label(
             img_frame,
             textvariable=self.decrypt_image_path,
-            bg=self.bg_color,
+            bg="white",
             fg="#374151",
             font=("Segoe UI" , 10)
         )
@@ -555,7 +562,7 @@ class StegoApp(tk.Tk):
         key_label = tk.Label(
             container,
             text="Decryption Key",
-            bg=self.bg_color,
+            bg="white",
             fg=self.text_color,
             font=("Segoe UI" , 11, "bold")
         )
@@ -571,7 +578,7 @@ class StegoApp(tk.Tk):
         channel_label = tk.Label(
             container,
             text="Channel Mode",
-            bg=self.bg_color,
+            bg="white",
             fg=self.text_color,
             font=("Segoe UI", 11, "bold")
         )
@@ -754,4 +761,3 @@ class StegoApp(tk.Tk):
 if __name__ == "__main__":
     app = StegoApp()
     app.mainloop()
-
