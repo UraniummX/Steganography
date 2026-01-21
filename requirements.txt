@@ -1,3 +1,8 @@
-Pillow 
-Tkinter 
-pyinstaller
+Requirements
+
+Pixel Guard is distributed as a standalone Windows application. No external dependencies are required to use the software. Users do not need to install Python, libraries, or additional runtime environments. The application is packaged as a compiled executable and runs independently on Windows systems. This ensures ease of use, portability, and accessibility for non-technical users.
+(Optional developer note if you want, but not required):
+For developers who wish to explore or modify the source code, Python 3 and the required libraries are needed. However, this is not necessary for normal usage.  
+ # Pillow 
+ # Tkinter 
+ # pyinstaller
