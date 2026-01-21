@@ -1,2 +1,3 @@
 # Steganography
-Encyrpts provided messages inside a picture 
+
+Pixel Guard – Image Steganography Tool for secure message hiding
